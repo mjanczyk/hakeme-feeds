@@ -6,7 +6,7 @@ module-template: ! 'module MODULE_NAME where
 '
 modules:
   Main(src/Main.hs):
-    target-type: console
+    target-type: web
     filename: src/Main.hs
   Scrapper:
     filename: src/Scrapper.hs

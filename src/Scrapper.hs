@@ -7,9 +7,14 @@ import qualified Text.StringLike as SL
 import Control.Monad (liftM)
 import qualified Data.Text as T
 import Data.Text (Text)
+import qualified Data.Text.Encoding as E
+import Data.Time.Clock (UTCTime)
+import Data.Time.Format (readTime)
+import System.Locale (defaultTimeLocale)
+import Codec.Binary.UTF8.String (decodeString)
 
 data Post = Post { title :: Text
-                 , date :: Text
+                 , date :: UTCTime
                  , link :: Text
                  , content :: Text }
          deriving (Show)
@@ -56,14 +61,20 @@ findContent host = renderTags . mapLinksToHost host . takeUntilTagClose (s"div")
 findLink :: (StringLike str, Show str) => str -> [Tag str] -> str
 findLink host = (SL.append host) . fromAttrib (SL.fromString "href") . head . head . sections (~== linkTag) . head . sections (~== postTitleTag)
 
-page :: Text -> IO Text
-page host = simpleHTTP (getRequest $ T.unpack host) >>= getResponseBody >>= return . T.pack
+fetchPage :: Text -> IO Text
+fetchPage host = simpleHTTP (getRequest $ T.unpack host) >>= getResponseBody >>= return . T.pack .decodeString
 
 mkPost :: Text -> [Tag Text] -> Post
 mkPost host post = Post { title = T.strip $ findTitle post
-                   , date = T.strip $ findDate post
+                   , date = parseDate $ findDate post
                    , link = findLink host post
                    , content = T.strip $ findContent host post }
 
 pageToPosts :: Text -> Text -> [Post]
 pageToPosts host page = map (mkPost host) $ posts $ parseTags page
+
+parseDate :: Text -> UTCTime
+parseDate = readTime locale fmt . T.unpack
+  where
+    locale = defaultTimeLocale
+    fmt = "%d.%m.%Y"
