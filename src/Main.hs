@@ -17,7 +17,8 @@ import Control.Concurrent.MVar
 import Scrapper (fetchPage, pageToPosts, Post (..), )
 
 data HakemeFeeds = HakemeFeeds {
-  feedCache :: MVar (UTCTime, Feed (Route HakemeFeeds))
+    feedCachePl :: MVar (UTCTime, Feed (Route HakemeFeeds))
+  , feedCacheEn :: MVar (UTCTime, Feed (Route HakemeFeeds))
 }
 
 data HLang = Pl | En deriving (Show, Eq, Read)
@@ -70,10 +71,13 @@ urlByLang En = T.pack "http://hakeme.com"
 
 cacheDurationSecs = 60 * 60 * 4 -- 4 hours
 
+feedCache Pl yesod = feedCachePl yesod
+feedCache En yesod = feedCacheEn yesod
+
 retrieveFeed lang format = do
   yesod <- getYesod
   now <- liftIO getCurrentTime
-  let cacheMVar = feedCache yesod
+  let cacheMVar = feedCache lang yesod
   liftIO $ modifyMVar cacheMVar (\(oldTime, oldFeed) ->
     if (addUTCTime cacheDurationSecs oldTime) < now
       then do -- replace cache
@@ -115,8 +119,9 @@ postToEntry (Post { title = title, date = date, link = link, content = content }
             , feedEntryContent = preEscapedToMarkup content }
 
 main = do
-  cache <- newMVar (readTime defaultTimeLocale "%Y" "1970", undefined)
-  warpEnv HakemeFeeds { feedCache = cache }
+  cachePl <- newMVar (readTime defaultTimeLocale "%Y" "1970", undefined)
+  cacheEn <- newMVar (readTime defaultTimeLocale "%Y" "1970", undefined)
+  warpEnv HakemeFeeds { feedCachePl = cachePl, feedCacheEn = cacheEn }
 
 {-
 main :: IO ()
