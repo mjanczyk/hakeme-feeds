@@ -1,7 +1,7 @@
 module Scrapper where
 
 import Network.HTTP (simpleHTTP, getRequest, getResponseBody)
-import Text.HTML.TagSoup (Tag (TagOpen, TagClose), parseTags, sections, partitions, (~==), innerText, isTagClose, renderTags, fromAttrib)
+import Text.HTML.TagSoup (Tag (TagOpen, TagClose), parseTags, sections, partitions, (~==), (~/=), innerText, isTagClose, renderTags, fromAttrib)
 import Text.StringLike (StringLike)
 import Control.Monad (liftM)
 import qualified Data.Text as T
@@ -32,7 +32,7 @@ mapLinksToHost host = map f
     rep key tr (x:xs) = x:(rep key tr xs)
 
 takeUntilTagCloseAny = takeWhile $ not . isTagClose
-takeUntilTagClose tag = takeWhile $ not . (~== (TagClose tag))
+takeUntilTagClose tag = takeWhile $ (~/= (TagClose tag))
 
 posts :: StringLike str => [Tag str] -> [[Tag str]]
 posts = partitions (~== postTag)
