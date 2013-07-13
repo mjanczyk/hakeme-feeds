@@ -28,11 +28,9 @@ linkTag = TagOpen "a" []
 mapLinksToHost :: StringLike str => str -> [Tag str] -> [Tag str]
 mapLinksToHost host = map f
   where
-    -- f :: StringLike str => Tag str -> Tag str
     f (TagOpen a attrs)   | a == s"a"     = TagOpen (s"a") $ rep (s"href") (SL.append host) attrs
     f (TagOpen img attrs) | img == s"img" = TagOpen (s"img") $ rep (s"src") (SL.append host) attrs
     f tag = tag
-    -- rep :: StringLike str => str -> (str -> str) -> [(str, str)] -> [(str, str)]
     rep key tr [] = []
     rep key tr ((key',val):xs) | key == key' = (key, tr val):xs
     rep key tr (x:xs) = x:(rep key tr xs)
@@ -55,7 +53,7 @@ findDate = innerText . takeUntilTagCloseAny . head . sections (~== postDateTag)
 findContent :: StringLike str => str -> [Tag str] -> str
 findContent host = renderTags . mapLinksToHost host . takeUntilTagClose (s"div") . head . sections (~== postContentTag)
 
-findLink :: (StringLike str, Show str, Eq str) => str -> [Tag str] -> str
+findLink :: (StringLike str, Show str) => str -> [Tag str] -> str
 findLink host = (SL.append host) . fromAttrib (SL.fromString "href") . head . head . sections (~== linkTag) . head . sections (~== postTitleTag)
 
 page :: Text -> IO Text
