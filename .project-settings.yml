@@ -8,3 +8,5 @@ modules:
   Main(src/Main.hs):
     target-type: console
     filename: src/Main.hs
+  Scrapper:
+    filename: src/Scrapper.hs

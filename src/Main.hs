@@ -2,7 +2,14 @@
 
 module Main where
 
+import Scrapper (page, parseAll, Post (..), )
+import qualified Data.Text as T
+
+url = "http://hakeme.pl"
+
 -- | The main entry point.
 main :: IO ()
 main = do
-  putStrLn "Welcome to the FP Haskell Center!"
+  p <- page url
+  mapM_ ((>> putStrLn "\n") . putStrLn . show ) $ parseAll url p
+  
