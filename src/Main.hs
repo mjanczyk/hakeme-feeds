@@ -81,11 +81,11 @@ retrieveFeed lang format = do
   liftIO $ modifyMVar cacheMVar (\(oldTime, oldFeed) ->
     if (addUTCTime cacheDurationSecs oldTime) < now
       then do -- replace cache
-        putStrLn "fetching site"
+        putStrLn $ "fetching site " ++ show lang
         feed <- feed lang format
         return ((now, feed), feed)
       else do
-        putStrLn "using cache"
+        putStrLn $ "using cache " ++ show lang
         return ((oldTime, oldFeed), oldFeed))
 
 getAtomFeedR lang = atomFeed =<< retrieveFeed lang Atom
